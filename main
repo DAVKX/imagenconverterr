@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GG MODS - Official</title>
+    <style>
+        /* RESET E FUNDO (CORREÇÃO DA TELA BRANCA) */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body { 
+            background-color: #0a0a0a; 
+            color: #ffffff; 
+            min-height: 100vh; 
+            overflow-x: hidden;
+        }
+
+        /* EFEITO BLUR VERMELHO */
+        .bg-blur {
+            position: fixed; 
+            top: 50%; left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 80vw; height: 80vh;
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+            filter: blur(100px); 
+            z-index: -1; 
+            pointer-events: none;
+        }
+
+        /* TOP BAR E MENU */
+        .top-bar { display: flex; padding: 20px 30px; }
+        .menu-btn { font-size: 2.5rem; color: #fff; cursor: pointer; background: none; border: none; }
+
+        .sidebar {
+            position: fixed; top: 0; left: -300px; width: 280px; height: 100vh;
+            background: rgba(15, 15, 15, 0.98); backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 0, 0, 0.3);
+            transition: 0.4s ease; z-index: 999; padding: 80px 20px;
+        }
+        .sidebar.aberto { left: 0; }
+        
+        .sidebar-item {
+            display: block; width: 100%; padding: 15px; margin-bottom: 12px;
+            background: rgba(255,255,255,0.05); border-radius: 12px; color: #fff;
+            text-decoration: none; font-weight: bold; text-align: center; cursor: pointer; border: none;
+        }
+        .btn-suporte { background: #ff4b4b !important; }
+
+        /* TÍTULO E CONTROLE */
+        header { text-align: center; padding: 20px; }
+        h1 {
+            font-size: 3.5rem; font-weight: 900; 
+            background: linear-gradient(135deg, #ff4b4b, #660000);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 30px; letter-spacing: -2px;
+        }
+
+        .barra-controle {
+            display: flex; justify-content: center; gap: 10px; margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            padding: 10px; border-radius: 50px; width: fit-content;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .barra-controle a {
+            color: #888; text-decoration: none; font-weight: bold;
+            padding: 10px 20px; border-radius: 30px; transition: 0.3s; cursor: pointer;
+        }
+        .barra-controle a.ativo { background: #ff4b4b; color: #fff; }
+
+        /* GRID DE APPS */
+        .grid-apps { 
+            display: none; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; max-width: 1200px; margin: 40px auto; padding: 20px; 
+        }
+        .grid-apps.ativa { display: grid; }
+
+        .app-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px; padding: 25px; text-align: center; position: relative;
+        }
+        .app-foto { width: 100px; height: 100px; border-radius: 22px; margin-bottom: 15px; object-fit: cover; }
+        .btn-link {
+            display: inline-block; background: #ff4b4b; color: #fff; text-decoration: none;
+            padding: 10px 25px; border-radius: 50px; font-weight: bold; margin-top: 15px;
+        }
+        .btn-excluir {
+            position: absolute; top: 10px; right: 10px; background: red; color: #fff;
+            border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: none;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal { background: #111; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; }
+        .modal input, .modal select { width: 100%; padding: 12px; margin-bottom: 10px; background: #222; border: 1px solid #333; color: #fff; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blur"></div>
+
+    <div class="top-bar">
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div id="admin-section" style="display: none;">
+            <button class="sidebar-item" onclick="abrirModal()">+ Novo Mod</button>
+            <button class="sidebar-item" onclick="logout()" style="background: #333;">Sair</button>
+        </div>
+        <button id="login-btn" class="sidebar-item" onclick="login()">Login Dono</button>
+        <a href="https://wa.me/5587981078693" target="_blank" class="sidebar-item btn-suporte">Suporte WhatsApp</a>
+    </div>
+
+    <header>
+        <h1>GG MODS</h1>
+        <nav class="barra-controle">
+            <a class="ativo" onclick="mudarAba(event, 'inicio')">Início</a>
+            <a onclick="mudarAba(event, 'lancamentos')">Novos</a>
+            <a onclick="mudarAba(event, 'baixados')">Mais Baixados</a>
+        </nav>
+    </header>
+
+    <main id="inicio" class="grid-apps ativa"></main>
+    <main id="lancamentos" class="grid-apps"></main>
+    <main id="baixados" class="grid-apps"></main>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h2 style="margin-bottom:15px">Adicionar Mod</h2>
+            <select id="aba"><option value="inicio">Início</option><option value="lancamentos">Novos</option><option value="baixados">Mais Baixados</option></select>
+            <input type="text" id="nome" placeholder="Nome do App">
+            <input type="text" id="img" placeholder="Link da Imagem">
+            <input type="text" id="desc" placeholder="Descrição">
+            <input type="text" id="link" placeholder="Link de Download">
+            <button onclick="salvar()" style="width:100%; padding:15px; background:#ff4b4b; border:none; color:#fff; font-weight:bold; border-radius:10px; cursor:pointer;">PUBLICAR</button>
+            <button onclick="fecharModal()" style="width:100%; background:none; border:none; color:#888; margin-top:10px; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        let logado = false;
+        let apps = JSON.parse(localStorage.getItem('gg_db')) || [];
+
+        window.onload = () => apps.forEach(render);
+
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('aberto'); }
+        function abrirModal() { toggleMenu(); document.getElementById('modal').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modal').style.display = 'none'; }
+
+        function login() {
+            if(prompt("Senha:") === "gg123") {
+                logado = true;
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('login-btn').style.display = 'none';
+                document.querySelectorAll('.btn-excluir').forEach(b => b.style.display = 'block');
+                toggleMenu();
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        function mudarAba(e, id) {
+            document.querySelectorAll('.barra-controle a').forEach(a => a.classList.remove('ativo'));
+            e.target.classList.add('ativo');
+            document.querySelectorAll('.grid-apps').forEach(g => g.classList.remove('ativa'));
+            document.getElementById(id).classList.add('ativa');
+        }
+
+        function salvar() {
+            const novo = { id: Date.now(), aba: document.getElementById('aba').value, nome: document.getElementById('nome').value, img: document.getElementById('img').value, desc: document.getElementById('desc').value, link: document.getElementById('link').value };
+            apps.push(novo);
+            localStorage.setItem('gg_db', JSON.stringify(apps));
+            render(novo);
+            fecharModal();
+        }
+
+        function render(app) {
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.id = app.id;
+            card.innerHTML = `
+                <button class="btn-excluir" style="display:${logado?'block':'none'}" onclick="excluir(${app.id})">X</button>
+                <img src="${app.img || 'https://via.placeholder.com/100'}" class="app-foto">
+                <h3>${app.nome}</h3>
+                <p style="color:#aaa; font-size:14px; margin-top:5px">${app.desc}</p>
+                <a href="${app.link}" class="btn-link" target="_blank">DOWNLOAD</a>
+            `;
+            document.getElementById(app.aba).appendChild(card);
+        }
+
+        function excluir(id) {
+            if(confirm("Excluir?")) {
+                apps = apps.filter(a => a.id !== id);
+                localStorage.setItem('gg_db', JSON.stringify(apps));
+                document.getElementById(id).remove();
+            }
+        }
+    </script>
+</body>
+</html>
