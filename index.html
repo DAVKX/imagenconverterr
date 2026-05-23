@@ -3,267 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DDS → PNG Converter FS19</title>
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.1/umd/index.min.js"></script>
+    <title>DDS → PNG FS19 - Conversor Real</title>
+    <script src="https://cdn.jsdelivr.net/npm/decode-dxt@1.0.1/decode-dxt.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Roboto:wght@300;400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@300;400;500&display=swap');
 
-        :root {
-            --blue: #00b4ff;
-            --dark: #0a1428;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        :root { --blue: #00d4ff; }
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #0a1428 0%, #1a2a5a 100%);
-            color: white;
+            background: linear-gradient(135deg, #0a1428 0%, #1e2b5c 100%);
+            color: #fff;
             min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
         }
 
-        /* Background blur effect */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 30%, rgba(0, 180, 255, 0.15) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-            animation: pulse 15s infinite alternate;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.6; transform: scale(1); }
-            100% { opacity: 1; transform: scale(1.05); }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            text-align: center;
-            padding: 40px 0 30px;
-            position: relative;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
         h1 {
             font-family: 'Orbitron', sans-serif;
             font-size: 3.2rem;
-            background: linear-gradient(90deg, #00eaff, #0077ff);
+            text-align: center;
+            background: linear-gradient(90deg, #00f0ff, #0099ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 40px rgba(0, 180, 255, 0.5);
-            animation: glow 2s infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 20px rgba(0, 180, 255, 0.5); }
-            to { text-shadow: 0 0 40px rgba(0, 180, 255, 0.8); }
-        }
-
-        .subtitle {
-            color: #a0c4ff;
-            margin-top: 10px;
-            font-size: 1.1rem;
         }
 
         .upload-area {
-            border: 3px dashed var(--blue);
-            border-radius: 20px;
-            padding: 60px 20px;
+            border: 4px dashed var(--blue);
+            border-radius: 24px;
+            padding: 70px 30px;
             text-align: center;
-            background: rgba(10, 20, 40, 0.6);
-            backdrop-filter: blur(12px);
-            transition: all 0.4s ease;
+            background: rgba(15, 30, 60, 0.75);
+            backdrop-filter: blur(16px);
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
+            transition: 0.4s;
         }
 
         .upload-area:hover {
-            background: rgba(0, 180, 255, 0.1);
-            border-color: #00eaff;
-            transform: translateY(-5px);
-        }
-
-        .upload-area::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(transparent, rgba(0, 180, 255, 0.05), transparent);
-            animation: scan 4s linear infinite;
-        }
-
-        @keyframes scan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(300%); }
+            border-color: #00ffcc;
+            background: rgba(0, 220, 255, 0.15);
         }
 
         .files-list {
-            margin-top: 30px;
-            max-height: 420px;
+            margin: 30px 0;
+            max-height: 520px;
             overflow-y: auto;
-            padding-right: 10px;
         }
 
         .file-item {
             display: flex;
             align-items: center;
             background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 14px;
             margin-bottom: 12px;
-            border-radius: 12px;
-            padding: 12px 16px;
-            transition: all 0.3s;
-        }
-
-        .file-item:hover {
-            background: rgba(0, 180, 255, 0.2);
-            transform: scale(1.02);
-        }
-
-        .preview {
-            width: 60px;
-            height: 60px;
-            background: #112244;
-            border-radius: 8px;
-            margin-right: 16px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            text-align: center;
-        }
-
-        .preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .controls {
-            margin-top: 30px;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
         button {
-            padding: 14px 32px;
+            padding: 14px 28px;
             font-size: 1.1rem;
-            font-weight: 600;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-weight: 600;
         }
 
         .btn-primary {
             background: linear-gradient(90deg, #00b4ff, #0099ff);
             color: white;
-            box-shadow: 0 10px 30px rgba(0, 180, 255, 0.4);
         }
 
-        .btn-primary:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 15px 40px rgba(0, 180, 255, 0.6);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            backdrop-filter: blur(10px);
-        }
-
-        .output-folder {
-            margin: 25px 0;
-            padding: 15px 20px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .status {
-            margin-top: 20px;
-            text-align: center;
-            font-size: 1.1rem;
-            min-height: 28px;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #00eaff;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: floatParticle 8s linear forwards;
-            opacity: 0.6;
-        }
-
-        @keyframes floatParticle {
-            0% { transform: translateY(0) scale(1); opacity: 0.8; }
-            100% { transform: translateY(-800px) scale(0.2); opacity: 0; }
-        }
+        .status { text-align: center; margin: 20px 0; font-size: 1.2rem; min-height: 30px; color: #00ffcc; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>DDS to PNG</h1>
-            <p class="subtitle">Conversor para Farming Simulator 19 • Totalmente no navegador</p>
-        </header>
+        <h1>DDS → PNG FS19</h1>
+        <p style="text-align:center; color:#88ccff; margin:10px 0 30px;">Conversor 100% no Navegador • Client-side com decode-dxt</p>
 
         <div class="upload-area" id="dropZone">
-            <h2>Arraste seus arquivos .DDS aqui</h2>
+            <h2>Arraste os arquivos .DDS aqui</h2>
             <p>ou</p>
-            <input type="file" id="fileInput" multiple accept=".dds" style="display: none;">
+            <input type="file" id="fileInput" multiple accept=".dds" style="display:none;">
             <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
-                Selecionar Arquivos DDS
+                📁 Selecionar Arquivos DDS
             </button>
-            <p style="margin-top: 15px; font-size: 0.95rem; color: #88aaff;">
-                Suporta DXT1, DXT5 e mais (conversão client-side)
-            </p>
         </div>
 
-        <div class="output-folder">
-            <strong>Pasta de saída:</strong>
-            <span id="outputPath" style="color: #00ffcc; font-family: monospace;">Downloads/FS19_Textures/</span>
-            <button class="btn-secondary" onclick="simulateFolderSelect()">Escolher Pasta</button>
-        </div>
+        <div class="files-list" id="filesList"></div>
 
-        <div id="filesContainer" class="files-list"></div>
-
-        <div class="controls">
-            <button onclick="convertAll()" class="btn-primary" id="convertBtn">
-                <span>🔄</span> Converter Todas
+        <div style="text-align:center; margin:25px 0;">
+            <button onclick="convertAll()" class="btn-primary" id="convertAllBtn">🔄 Converter Todas</button>
+            <button onclick="downloadAll()" class="btn-primary" id="downloadAllBtn" disabled style="margin-left:15px;">
+                ⬇️ Baixar Todas as PNGs
             </button>
-            <button onclick="downloadAll()" class="btn-primary" id="downloadBtn" disabled>
-                <span>⬇️</span> Baixar Todas as PNGs
-            </button>
-            <button onclick="clearAll()" class="btn-secondary">
-                Limpar Lista
-            </button>
+            <button onclick="clearAll()" style="margin-left:15px; background:#555;">Limpar Tudo</button>
         </div>
 
         <div class="status" id="status"></div>
@@ -274,176 +108,193 @@
 
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const filesContainer = document.getElementById('filesContainer');
+        const filesList = document.getElementById('filesList');
         const statusEl = document.getElementById('status');
-        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
 
-        // Drag and drop
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#00ffcc';
-            dropZone.style.background = 'rgba(0, 255, 200, 0.1)';
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.style.borderColor = '#00b4ff';
-            dropZone.style.background = 'rgba(10, 20, 40, 0.6)';
-        });
-
+        // Drag & Drop
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#00ffcc'; });
+        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = '#00d4ff');
         dropZone.addEventListener('drop', e => {
             e.preventDefault();
-            dropZone.style.borderColor = '#00b4ff';
-            dropZone.style.background = 'rgba(10, 20, 40, 0.6)';
+            dropZone.style.borderColor = '#00d4ff';
             handleFiles(e.dataTransfer.files);
         });
 
         fileInput.addEventListener('change', () => {
             handleFiles(fileInput.files);
+            fileInput.value = '';
         });
 
         function handleFiles(fileList) {
-            for (let file of fileList) {
-                if (file.name.toLowerCase().endsWith('.dds')) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const imgUrl = URL.createObjectURL(file); // Preview fallback
-                        filesData.push({
-                            name: file.name,
-                            originalFile: file,
-                            dataUrl: e.target.result,
-                            previewUrl: imgUrl,
-                            converted: null
-                        });
-                        renderFiles();
-                    };
-                    reader.readAsArrayBuffer(file);
-                } else {
-                    alert("Apenas arquivos .DDS são suportados!");
-                }
-            }
+            statusEl.textContent = `Carregando ${fileList.length} arquivo(s)...`;
+            Array.from(fileList).forEach(file => {
+                if (!file.name.toLowerCase().endsWith('.dds')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const buffer = e.target.result;
+                    const previewUrl = URL.createObjectURL(file);
+
+                    filesData.push({
+                        name: file.name,
+                        buffer: buffer,
+                        previewUrl: previewUrl,
+                        pngBlob: null
+                    });
+                    renderFiles();
+                    statusEl.textContent = `${filesData.length} arquivo(s) prontos`;
+                };
+                reader.readAsArrayBuffer(file);
+            });
         }
 
         function renderFiles() {
-            filesContainer.innerHTML = '';
+            filesList.innerHTML = '';
             filesData.forEach((file, index) => {
                 const div = document.createElement('div');
                 div.className = 'file-item';
                 div.innerHTML = `
-                    <div class="preview">
-                        ${file.previewUrl ? `<img src="${file.previewUrl}" alt="preview">` : 'DDS'}
+                    <div style="width:80px; height:80px; background:#112244; border-radius:10px; margin-right:18px; overflow:hidden;">
+                        <img src="${file.previewUrl}" style="width:100%; height:100%; object-fit:cover;">
                     </div>
-                    <div style="flex: 1;">
+                    <div style="flex:1;">
                         <strong>${file.name}</strong><br>
-                        <small style="color: #88aaff;">${(file.originalFile.size / 1024 / 1024).toFixed(2)} MB</small>
+                        <small>${(file.buffer.byteLength / 1024 / 1024).toFixed(2)} MB</small>
                     </div>
                     <div>
-                        ${file.converted ? 
-                            `<button onclick="downloadSingle(${index})" style="padding: 8px 16px; font-size: 0.9rem;">Baixar PNG</button>` : 
-                            `<button onclick="convertSingle(${index})" style="padding: 8px 16px; font-size: 0.9rem; background: #00cc88;">Converter</button>`
+                        ${file.pngBlob ? 
+                            `<button onclick="downloadSingle(${index})" style="padding:10px 22px;">Baixar PNG</button>` : 
+                            `<button onclick="convertSingle(${index})" style="padding:10px 22px; background:#00cc77;">Converter</button>`
                         }
                     </div>
                 `;
-                filesContainer.appendChild(div);
+                filesList.appendChild(div);
             });
         }
 
         async function convertSingle(index) {
             const file = filesData[index];
-            statusEl.textContent = `Convertendo ${file.name}...`;
-            
-            // Simulação de conversão (na prática usaria um parser DDS completo)
-            await new Promise(r => setTimeout(r, 800));
-            
-            // Para fins demonstrativos, usamos o próprio arquivo como "convertido" (em app real faria parsing)
-            file.converted = file.dataUrl;
-            renderFiles();
-            statusEl.textContent = `${file.name} convertido com sucesso!`;
-            downloadBtn.disabled = false;
+            statusEl.textContent = `Convertendo ${file.name}... (decode-dxt)`;
+
+            try {
+                const result = await convertDDStoPNG(file.buffer);
+                file.pngBlob = result;
+                renderFiles();
+                downloadAllBtn.disabled = false;
+                statusEl.textContent = `✅ ${file.name} convertido com sucesso`;
+            } catch (err) {
+                statusEl.textContent = `❌ Erro ao converter ${file.name}`;
+                console.error(err);
+            }
         }
 
         async function convertAll() {
-            if (filesData.length === 0) return;
-            
-            const convertBtn = document.getElementById('convertBtn');
-            convertBtn.disabled = true;
-            convertBtn.innerHTML = `<span>🔄</span> Convertendo...`;
-            
+            const btn = document.getElementById('convertAllBtn');
+            btn.disabled = true;
+            btn.textContent = "Convertendo...";
+
             for (let i = 0; i < filesData.length; i++) {
-                if (!filesData[i].converted) {
+                if (!filesData[i].pngBlob) {
                     await convertSingle(i);
                 }
             }
-            
-            convertBtn.disabled = false;
-            convertBtn.innerHTML = `<span>🔄</span> Converter Todas`;
-            statusEl.textContent = '✅ Todas as imagens convertidas!';
+
+            btn.disabled = false;
+            btn.textContent = "🔄 Converter Todas";
+            statusEl.textContent = "✅ Conversão concluída!";
         }
 
         function downloadSingle(index) {
             const file = filesData[index];
-            if (!file.converted) return;
-            
+            if (!file.pngBlob) return;
             const link = document.createElement('a');
-            const pngName = file.name.replace('.dds', '.png');
-            link.download = pngName;
-            link.href = URL.createObjectURL(file.originalFile); // Em produção: blob da PNG real
+            link.href = URL.createObjectURL(file.pngBlob);
+            link.download = file.name.replace('.dds', '.png');
             link.click();
         }
 
         function downloadAll() {
-            if (filesData.length === 0) return;
-            
-            statusEl.textContent = 'Baixando todas as imagens...';
-            
             filesData.forEach((file, i) => {
-                setTimeout(() => {
-                    if (file.converted) {
-                        downloadSingle(i);
-                    }
-                }, i * 150);
+                if (file.pngBlob) setTimeout(() => downloadSingle(i), i * 100);
             });
-            
-            setTimeout(() => {
-                statusEl.textContent = '✅ Todas as imagens foram baixadas!';
-            }, filesData.length * 200);
         }
 
         function clearAll() {
             filesData = [];
-            filesContainer.innerHTML = '';
-            downloadBtn.disabled = true;
+            filesList.innerHTML = '';
+            downloadAllBtn.disabled = true;
             statusEl.textContent = '';
         }
 
-        function simulateFolderSelect() {
-            const path = prompt("Digite o caminho da pasta desejada (simulação):", "Downloads/FS19_Textures");
-            if (path) {
-                document.getElementById('outputPath').textContent = path + "/";
-            }
-        }
-
-        // Partículas animadas de fundo
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + 'vw';
-            particle.style.animationDuration = (Math.random() * 6 + 7) + 's';
-            particle.style.opacity = Math.random() * 0.5 + 0.3;
-            document.body.appendChild(particle);
+        // ==================== CONVERSÃO REAL DDS → PNG ====================
+        async function convertDDStoPNG(arrayBuffer) {
+            const dds = new Uint8Array(arrayBuffer);
             
-            setTimeout(() => {
-                particle.remove();
-            }, 15000);
+            // Parse DDS header simples
+            const magic = String.fromCharCode(...dds.slice(0,4));
+            if (magic !== 'DDS ') throw new Error("Não é um arquivo DDS válido");
+
+            const header = new DataView(arrayBuffer, 4, 124);
+            const height = header.getUint32(8, true);
+            const width = header.getUint32(12, true);
+            const pitchOrLinearSize = header.getUint32(16, true);
+            const mipMapCount = header.getUint32(28, true);
+            const pfFlags = header.getUint32(76, true);
+            const fourCC = header.getUint32(80, true);
+
+            let format = 'unknown';
+            if (fourCC === 0x31545844) format = 'DXT1';      // "DXT1"
+            else if (fourCC === 0x33545844) format = 'DXT3'; // "DXT3"
+            else if (fourCC === 0x35545844) format = 'DXT5'; // "DXT5"
+
+            let decoded;
+            if (format === 'DXT1' || format === 'DXT5') {
+                decoded = decodeDXT(dds, width, height, format);
+            } else {
+                // Fallback para formatos não comprimidos (RGBA)
+                decoded = new Uint8ClampedArray(dds.slice(128));
+            }
+
+            // Criar PNG via Canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(width, height);
+            imageData.data.set(decoded);
+            ctx.putImageData(imageData, 0, 0);
+
+            return new Promise(resolve => {
+                canvas.toBlob(blob => resolve(blob), 'image/png', 1.0);
+            });
         }
 
-        setInterval(() => {
-            if (Math.random() > 0.4) createParticle();
-        }, 120);
+        function decodeDXT(ddsData, width, height, format) {
+            // decode-dxt espera os dados comprimidos após o header
+            const compressedData = new Uint8Array(ddsData.slice(128));
+            let decoded;
 
-        // Mensagem inicial
-        window.onload = () => {
-            console.log('%cConversor DDS → PNG para FS19 pronto!', 'color: #00b4ff; font-size: 16px;');
-        };
+            if (format === 'DXT1') {
+                decoded = decodeDXT1(compressedData, width, height);
+            } else if (format === 'DXT5') {
+                decoded = decodeDXT5(compressedData, width, height);
+            } else {
+                decoded = decodeDXT1(compressedData, width, height); // fallback
+            }
+            return decoded;
+        }
+
+        // Funções auxiliares do decode-dxt (exemplo básico)
+        function decodeDXT1(data, width, height) {
+            return window.decodeDXT.decodeDXT1(data, width, height);
+        }
+
+        function decodeDXT5(data, width, height) {
+            return window.decodeDXT.decodeDXT5(data, width, height);
+        }
+
+        console.log('%cConversor DDS com decode-dxt carregado!', 'color:#00ffcc; font-size:16px;');
     </script>
 </body>
 </html>
